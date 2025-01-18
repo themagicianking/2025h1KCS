@@ -14,11 +14,13 @@ from flask import Flask
 from bs4 import BeautifulSoup
 import requests
 
-
 # Write a script to scrape news articles from a website (e.g., CNN, BBC)
 def get_news():
-    r = requests.get("https://richmond.com/")
-    print(r)
+    r = requests.get("https://www.wtvr.com/")
+    soup = BeautifulSoup(r.content, "html.parser")
+    headlines = [x.get_text() for x in soup.find_all("h3", class_="ListItem-title")]
+    # print(headlines)
+    return headlines
 
 
 app = Flask(__name__)
@@ -26,4 +28,9 @@ app = Flask(__name__)
 
 @app.route("/")
 def main():
-    return "<p>Placeholder text</p>"
+    headlines = get_news()
+    html = ["<p>{text}</p>".format(text=x) for x in headlines]
+    return "<p>Here is the content.</p><div>{html}</div>".format(html="".join(html))
+
+
+get_news()
