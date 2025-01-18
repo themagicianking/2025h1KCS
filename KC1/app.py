@@ -2,12 +2,6 @@
 
 # Learning Objective: Set up a Python Flask project and perform basic web scraping
 
-# Requirements:
-# Store scraped data in a SQL-related database
-# Create a simple web interface to display stored headlines
-
-# Compound Work: None yet
-
 # Create a new Flask project
 # Install required packages (Flask, BeautifulSoup, requests)
 from flask import Flask
@@ -26,10 +20,12 @@ def get_news():
     headlines = [x.get_text() for x in soup.find_all("h3", class_="ListItem-title")]
     return headlines
 
+# Store scraped data in a SQL-related database
 def create_database():
     headlines = get_news()
     conn = sqlite3.connect('news.db')
     c = conn.cursor()
+    c.execute('''DROP TABLE IF EXISTS news''')
     c.execute('''CREATE TABLE IF NOT EXISTS news (id INTEGER PRIMARY KEY, headline TEXT)''')
     print("created news table")
     for headline in headlines:
@@ -40,18 +36,19 @@ def create_database():
 
 
 @app.route("/")
+# Create a simple web interface to display stored headlines
 def main():
     conn = sqlite3.connect('news.db')
     c = conn.cursor()
     c.execute('SELECT * FROM news')
     news = c.fetchall()
     conn.close()
-    print("running")
-    # news = "hi"
-    return "<p>{news}</p>".format(news=news)
-    # headlines = get_news()
-    # html = ["<p>{text}</p>".format(text=x) for x in headlines]
-    # return "<p>Here is the content.</p><div>{html}</div>".format(html="".join(html))
+    rows = []
+    rows.append("""<table><tr><th>Article ID</th><th>Headline<th></tr>""")
+    for article in news:
+        rows.append("""<tr><td>{ID}</td><td>{headline}</td></tr>""".format(ID=article[0], headline=article[1]))
+    rows.append("""</table>""")
+    return "".join(rows)
 
 
 if __name__ == '__main__':
