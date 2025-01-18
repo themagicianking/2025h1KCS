@@ -13,6 +13,8 @@
 from flask import Flask
 from bs4 import BeautifulSoup
 import requests
+import sqlite3
+from datetime import datetime
 
 # Write a script to scrape news articles from a website (e.g., CNN, BBC)
 def get_news():
