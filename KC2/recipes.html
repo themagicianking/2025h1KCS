@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10 Easy Breakfast Recipes</title>
+</head>
+<body>
+  {% block body %}
+  <h1>10 Easy Breakfast Recipes</h1>
+  {{ for recipe in list}}
+  <h2>{{recipe.title}}</h2>
+  <h3>Ingredients</h3>
+  <ul>
+    {{for ingredient in recipe.ingredients}}
+    <li>{{ingredient}}</li>
+    {{end for}}
+  </ul>
+  <h3>Instructions</h3>
+  <ul>
+    {{for step in recipe.instructions}}
+    <li>{{step}}</li>
+    {{ end for }}
+  </ul>
+  {{end for}}
+  {% end block %}
+</body>
+</html>
