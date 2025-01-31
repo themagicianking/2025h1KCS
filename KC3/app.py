@@ -10,13 +10,27 @@
 # Compound Work: Integrate web scraping from previous weeks with form handling
 
 from flask import Flask, render_template
+import requests
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
 
+def get_works():
+    r = requests.get("https://archiveofourown.org/tags/Art/works")
+    soup = BeautifulSoup(r.content, "html.parser")
+    works = soup.find("ol", class_="work")
+    titles = [x.get_text() for x in works.find_all("h4")]
+    return titles
+
+
 @app.route("/")
 def main():
-    return render_template("index.html")
+    works = get_works()
+    try:
+        return render_template("index.html", works=works)
+    except Exception as e:
+        return e
 
 
 if __name__ == "__main__":
