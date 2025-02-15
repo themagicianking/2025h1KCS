@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <p>
+      This app scrapes archive of our own for works posted there containing the
+      tag that you choose.
+    </p>
+    <form action="{{ url_for('submit')}}" method="post">
+      <label for="tag"
+        >Please input which tag you'd like to see works for:</label
+      >
+      <input type="text" id="tag" name="tag" />
+      <input type="submit" value="Submit" />
+    </form>
+    {% if works %}
+    <p>Here are works with that tag:</p>
+    {% for work in works %}
+    <p>{{work}}</p>
+    {% endfor %}
+    <p>And here's a related image:</p>
+    <img src="{{image.url}}" alt="{{image.alt}}">
+    <p>Image by {{image.author}}</p>
+    {% endif %} {% if error %}
+    <p>{{error}}</p>
+    {% endif %}
+  </body>
+</html>
