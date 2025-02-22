@@ -2,11 +2,11 @@
 # Learning Objective: Improve the user interface and user experience
 
 # Requirements:
-    # Create a more polished UI using CSS framework
-    # Implement pagination for separating small chunks of data
-    # Add search functionality to filter articles
-    # Consolidate your work from KC1 - KC5 into a single application
-    # Ensure your README includes set up instructions, description, and a visual of your application in action including your database
+# Create a more polished UI using CSS framework
+# Implement pagination for separating small chunks of data
+# Add search functionality to filter articles
+# Consolidate your work from KC1 - KC5 into a single application
+# Ensure your README includes set up instructions, description, and a visual of your application in action including your database
 
 # Compound Work: Enhance user interaction with stored data
 
@@ -16,6 +16,8 @@ from bs4 import BeautifulSoup
 import os
 from dotenv import load_dotenv
 import json
+import sqlite3
+from datetime import datetime
 
 load_dotenv()
 
@@ -37,10 +39,10 @@ def get_works(tag):
         soup = BeautifulSoup(r.content, "html.parser")
         list = soup.find("ol", class_="work")
         # search_query = soup.find("h2").get_text()
-        works = [x.get_text() for x in list.find_all("h4")]
+        works = [x.get_text().replace("\n", "") for x in list.find_all("h4")]
         # titles.append(search_query)
         # debug = [tag, search_query]
-        return {"status": 200, "works": works}
+        return works
     except BaseException:
         return {"status": 404, "message": "Sorry, that's not a valid tag."}
 
@@ -63,6 +65,40 @@ def get_image(tag):
         return {"status": 404, "message": "Could not get photo."}
 
 
+# Store scraped data in a SQL-related database
+def create_database(tag):
+    # try:
+    works = get_works(tag)
+    print(works)
+    image = get_image(tag)
+    conn = sqlite3.connect("kc.db")
+    c = conn.cursor()
+    c.execute("""DROP TABLE IF EXISTS works""")
+    c.execute("""DROP TABLE IF EXISTS images""")
+    c.execute(
+        """CREATE TABLE IF NOT EXISTS works (id INTEGER PRIMARY KEY, description VARCHAR(1000))"""
+    )
+    print("created works table")
+    c.execute(
+        """CREATE TABLE IF NOT EXISTS images (id INTEGER PRIMARY KEY, author VARCHAR(1000), alt VARCHAR(1000), url VARCHAR)"""
+    )
+    print("created images table")
+    for work in works:
+        c.execute("INSERT INTO works (description) VALUES (?)", (work,))
+    print("added work to works table")
+    c.execute(
+        "INSERT INTO images (author, alt, url) VALUES (?,?,?)",
+        (image["author"], image["alt"], image["url"]),
+    )
+    print("added image to images table")
+    conn.commit()
+    conn.close()
+
+
+# except:
+# print("Could not create database.")
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -72,12 +108,16 @@ def index():
 def submit():
     if request.method == "POST":
         data = request.form.get("tag")
-        works = get_works(data)
-        image = get_image(data)
-        if works["status"] == 200:
-            return render_template("index.html", works=works["works"], image=image)
-        else:
-            return render_template("index.html", error=works["message"])
+        print(data)
+        create_database(data)
+        conn = sqlite3.connect("kc.db")
+        c = conn.cursor()
+        c.execute("SELECT * FROM works")
+        works = c.fetchall()
+        c.execute("SELECT * FROM images")
+        images = c.fetchall()
+        image = images
+        return render_template("index.html", works=works, image=image)
 
 
 if __name__ == "__main__":
