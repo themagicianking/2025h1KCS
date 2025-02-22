@@ -20,7 +20,7 @@
     {% if works %}
     <p>Here are works with that tag:</p>
     {% for work in works %}
-    <p>{{work}}</p>
+    <p>{{work[1]}}</p>
     {% endfor %}
     <p>And here's a related image:</p>
     <img src="{{image.url}}" alt="{{image.alt}}">

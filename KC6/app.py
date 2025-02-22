@@ -69,28 +69,17 @@ def get_image(tag):
 def create_database(tag):
     # try:
     works = get_works(tag)
-    print(works)
     image = get_image(tag)
     conn = sqlite3.connect("kc.db")
     c = conn.cursor()
     c.execute("""DROP TABLE IF EXISTS works""")
-    c.execute("""DROP TABLE IF EXISTS images""")
     c.execute(
         """CREATE TABLE IF NOT EXISTS works (id INTEGER PRIMARY KEY, description VARCHAR(1000))"""
     )
     print("created works table")
-    c.execute(
-        """CREATE TABLE IF NOT EXISTS images (id INTEGER PRIMARY KEY, author VARCHAR(1000), alt VARCHAR(1000), url VARCHAR)"""
-    )
-    print("created images table")
     for work in works:
         c.execute("INSERT INTO works (description) VALUES (?)", (work,))
     print("added work to works table")
-    c.execute(
-        "INSERT INTO images (author, alt, url) VALUES (?,?,?)",
-        (image["author"], image["alt"], image["url"]),
-    )
-    print("added image to images table")
     conn.commit()
     conn.close()
 
@@ -108,15 +97,13 @@ def index():
 def submit():
     if request.method == "POST":
         data = request.form.get("tag")
-        print(data)
         create_database(data)
         conn = sqlite3.connect("kc.db")
         c = conn.cursor()
         c.execute("SELECT * FROM works")
         works = c.fetchall()
-        c.execute("SELECT * FROM images")
-        images = c.fetchall()
-        image = images
+        image = get_image(data)
+        print(image)
         return render_template("index.html", works=works, image=image)
 
 
